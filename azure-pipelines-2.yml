@@ -1,0 +1,74 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: Build
+  displayName: Contruyendo Aplicación
+  jobs:
+  - job: ubuntu
+    displayName: "Detect Secrets"
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - task: UsePythonVersion@0
+        displayName: "Set Python 3 as default"
+        inputs:
+          versionSpec: "3"
+          addToPath: true
+          architecture: "x64"
+          
+      - bash: pip install detect-secrets
+        displayName: "Install detect-secrets using pip"
+
+      - bash: |
+          detect-secrets --version
+          detect-secrets scan --all-files --force-use-all-plugins --exclude-files FETCH_HEAD > $(Pipeline.Workspace)/detect-secrets.json
+        displayName: "Run detect-secrets tool"
+
+      - task: PublishPipelineArtifact@1
+        displayName: "Publish results in the Pipeline Artifact"
+        inputs:
+          targetPath: "$(Pipeline.Workspace)/detect-secrets.json"
+          artifact: "detect-secrets-ubuntu"
+          publishLocation: "pipeline"
+
+      - bash: |
+          dsjson=$(cat $(Pipeline.Workspace)/detect-secrets.json)
+          echo "${dsjson}"
+
+          count=$(echo "${dsjson}" | jq -c -r '.results | length')
+
+          if [ $count -gt 0 ]; then
+            msg="Secrets were detected in code. ${count} file(s) affected."
+            echo "##vso[task.logissue type=error]${msg}"
+            echo "##vso[task.complete result=Failed;]${msg}."
+          else
+            echo "##vso[task.complete result=Succeeded;]No secrets detected."
+          fi
+        displayName: "Analyzing detect-secrets results"
+      - task: Maven@4
+        inputs:
+          mavenPomFile: 'pom.xml'
+          publishJUnitResults: true
+          testResultsFiles: '**/surefire-reports/TEST-*.xml'
+          javaHomeOption: 'JDKVersion'
+          jdkVersionOption: '1.17'
+          mavenVersionOption: 'Default'
+          mavenAuthenticateFeed: false
+          effectivePomSkip: false
+          sonarQubeRunAnalysis: false
+        displayName: Contruyendo Artefacto Pet Clinic    
+      - task: CopyFiles@2
+        inputs:
+          Contents: 'target/*.jar'
+          TargetFolder: '$(build.artifactstagingdirectory)'
+        displayName: Copiando Artefacto Pet Clinic
+      - task: PublishBuildArtifacts@1
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: 'artifact'
+          publishLocation: 'Container'
+        displayName: Publicando Artefacto Pet Clinic
