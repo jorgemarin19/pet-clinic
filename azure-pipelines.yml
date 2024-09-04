@@ -63,7 +63,7 @@ stages:
         organization: 'jorgemarin19'
         
   - job: trivy
-    displayName: Snyk (SCA & SAST)
+    displayName: Trivy
     steps:
     - task: Trivy@1
       displayName: 'Run Trivy Vulnerability Scanner'
