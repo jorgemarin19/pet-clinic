@@ -1,0 +1,48 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: Build
+  displayName: Contruyendo Aplicación
+  jobs:
+  - job: job01
+    displayName: Compilando
+    steps:
+    - task: Maven@4
+      inputs:
+        mavenPomFile: 'pom.xml'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.17'
+        mavenVersionOption: 'Default'
+        mavenAuthenticateFeed: false
+        effectivePomSkip: false
+        sonarQubeRunAnalysis: false
+      displayName: Contruyendo Artefacto Pet Clinic
+    - task: Maven@4
+      inputs:
+        mavenPomFile: 'pom.xml'
+        goals: 'deploy'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        mavenVersionOption: 'Default'
+        mavenAuthenticateFeed: false
+        effectivePomSkip: false
+        sonarQubeRunAnalysis: false
+      displayName: Publicando Artefacto en Artifacts Pet Clinic
+    - task: CopyFiles@2
+      inputs:
+        Contents: 'target/*.jar'
+        TargetFolder: '$(build.artifactstagingdirectory)'
+      displayName: Copiando Artefacto Pet Clinic
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'artifact'
+        publishLocation: 'Container'
+      displayName: Publicando Artefacto Pet Clinic
