@@ -22,19 +22,7 @@ stages:
         mavenAuthenticateFeed: false
         effectivePomSkip: false
         sonarQubeRunAnalysis: false
-      displayName: Contruyendo Artefacto Pet Clinic
-    - task: Maven@4
-      inputs:
-        mavenPomFile: 'pom.xml'
-        goals: 'deploy'
-        publishJUnitResults: true
-        testResultsFiles: '**/surefire-reports/TEST-*.xml'
-        javaHomeOption: 'JDKVersion'
-        mavenVersionOption: 'Default'
-        mavenAuthenticateFeed: false
-        effectivePomSkip: false
-        sonarQubeRunAnalysis: false
-      displayName: Publicando Artefacto en Artifacts Pet Clinic
+      displayName: Contruyendo Artefacto Pet Clinic    
     - task: CopyFiles@2
       inputs:
         Contents: 'target/*.jar'
