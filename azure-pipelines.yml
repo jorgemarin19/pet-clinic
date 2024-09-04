@@ -65,7 +65,7 @@ stages:
   - job: trivy
     displayName: Snyk (SCA & SAST)
     steps:
-    - task: TrivyScan@0
+    - task: Trivy@1
       displayName: 'Run Trivy Vulnerability Scanner'
       inputs:
         targetType: 'inline'
